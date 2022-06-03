@@ -12,7 +12,7 @@ const resolvers = {
     },
   },
   Mutation: {
-    addUser: async (paremt, { email, password }) => {
+    addUser: async (parent, { email, password }) => {
       const user = await User.findOne({ email });
       if (!user) {
         throw new AuthenticationError('No user with this email address.')
@@ -24,6 +24,16 @@ const resolvers = {
 
       const token = signToken(user);
       return { token, user };
-    }
+    },
+    saveBook: async (parents, { book }, context) => {
+      if (context.user) {
+        return User.findOneandUpdate(
+          { _id: context.user._id },
+          { $addToSet: { savedBooks: args.input } },
+          { new: true }
+        );
+      }
+      throw new AuthenticationError('You must be logged in!');
+    },
   }
 }
